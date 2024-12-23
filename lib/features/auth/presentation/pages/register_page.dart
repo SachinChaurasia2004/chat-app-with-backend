@@ -69,7 +69,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 );
               }, listener: (context, state) {
                 if (state is AuthAuthenticated) {
-                  Navigator.pushNamed(context, '/chat');
+                  Navigator.pushNamed(context, '/home');
                 } else if (state is AuthError) {
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.error)));

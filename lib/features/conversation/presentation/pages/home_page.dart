@@ -1,8 +1,22 @@
 import 'package:chat_app/core/theme.dart';
+import 'package:chat_app/features/chat/presentation/pages/pages/chat_page.dart';
+import 'package:chat_app/features/conversation/presentation/bloc/conversation_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class MessagePage extends StatelessWidget {
-  const MessagePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<ConversationBloc>(context).add(FetchConversations());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +51,8 @@ class MessagePage extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               children: [
                 _buildRecentContact('Pushpa', context),
-                _buildRecentContact('Pushpa', context),
-                _buildRecentContact('Pushpa', context),
-                _buildRecentContact('Pushpa', context),
-                _buildRecentContact('Pushpa', context),
-                _buildRecentContact('Pushpa', context),
+                _buildRecentContact('Singham', context),
+                _buildRecentContact('Bahubali', context),
               ],
             ),
           ),
@@ -56,14 +67,32 @@ class MessagePage extends StatelessWidget {
                   topLeft: Radius.circular(50),
                   topRight: Radius.circular(50),
                 )),
-            child: ListView(
-              children: [
-                _buildMessageTile('John Cena', 'Hii', '11:23'),
-                _buildMessageTile('John Cena', 'Hii', '11:23'),
-                _buildMessageTile('John Cena', 'Hii', '11:23'),
-                _buildMessageTile('John Cena', 'Hii', '11:23'),
-                _buildMessageTile('John Cena', 'Hii', '11:23'),
-              ],
+            child: BlocBuilder<ConversationBloc, ConversationState>(
+              builder: (context, state) {
+                if (state is ConversationLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (state is ConversationLoaded) {
+                  return ListView.builder(
+                    itemCount: state.conversations.length,
+                    itemBuilder: (context, index) {
+                      final conversation = state.conversations[index];
+                      return _buildMessageTile(
+                        conversation.name,
+                        conversation.lastMessage,
+                        conversation.lastMessageTime.toString(),
+                        conversation.id,
+                      );
+                    },
+                  );
+                } else if (state is ConversationError) {
+                  return Center(child: Text(state.error));
+                }
+                return Center(
+                  child: Text("No Conversations found"),
+                );
+              },
             ),
           ))
         ],
@@ -78,7 +107,8 @@ class MessagePage extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundImage: NetworkImage(''),
+            backgroundImage:
+                NetworkImage('https://avatar.iran.liara.run/public/boy'),
           ),
           SizedBox(
             height: 5,
@@ -92,12 +122,23 @@ class MessagePage extends StatelessWidget {
     );
   }
 
-  Widget _buildMessageTile(String name, String message, String time) {
+  Widget _buildMessageTile(
+      String name, String message, String time, String conversationId) {
     return ListTile(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatPage(
+                conversationId: conversationId,
+                name: name,
+              ),
+            ));
+      },
       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       leading: CircleAvatar(
         radius: 30,
-        backgroundImage: NetworkImage(''),
+        backgroundImage: NetworkImage('https://avatar.iran.liara.run/public'),
       ),
       title: Text(
         name,

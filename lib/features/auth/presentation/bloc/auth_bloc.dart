@@ -30,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final user = await registerUsecase.call(
           event.username, event.email, event.password);
       await _storage.write(key: 'token', value: user.token);
+      await _storage.write(key: 'userId', value: user.id);
       emit(AuthAuthenticated());
     } catch (e) {
       emit(AuthError(error: " $e"));
@@ -41,6 +42,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user = await loginUsecase.call(event.email, event.password);
       await _storage.write(key: 'token', value: user.token);
+      await _storage.write(key: 'userId', value: user.id);
       emit(AuthAuthenticated());
     } catch (e) {
       emit(AuthError(error: " $e"));
