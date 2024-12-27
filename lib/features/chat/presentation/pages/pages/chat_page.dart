@@ -6,8 +6,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ChatPage extends StatefulWidget {
   final String conversationId;
-
   final String name;
+
   const ChatPage({
     super.key,
     required this.conversationId,

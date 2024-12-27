@@ -1,5 +1,5 @@
 import 'package:chat_app/features/conversation/domain/repository/convo_repo.dart';
-import '../entity/convo_entity.dart';
+import '../entities/convo_entity.dart';
 
 class FetchConversationsUseCase {
   final ConversationRepository repository;

@@ -1,12 +1,12 @@
-import '../../domain/entity/convo_entity.dart';
+import '../../domain/entities/convo_entity.dart';
 
 class ConversationModel extends ConversationEntity {
   ConversationModel({
     required super.id,
-    required super.userId,
-    required super.name,
-    required super.lastMessage,
-    required super.lastMessageTime,
+    super.userId,
+    super.name,
+    super.lastMessage,
+    super.lastMessageTime,
   });
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
@@ -15,7 +15,9 @@ class ConversationModel extends ConversationEntity {
       userId: json['userId'],
       name: json['name'],
       lastMessage: json['lastMessage'],
-      lastMessageTime: DateTime.parse(json['lastMessageTime']),
+      lastMessageTime: json['lastMessageTime'] != null
+          ? DateTime.parse(json['lastMessageTime'])
+          : null,
     );
   }
 }

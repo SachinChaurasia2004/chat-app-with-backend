@@ -1,6 +1,11 @@
 import 'package:chat_app/core/theme.dart';
 import 'package:chat_app/features/chat/presentation/pages/pages/chat_page.dart';
+import 'package:chat_app/features/conversation/data/datasource/convo_remote_data_source.dart';
+import 'package:chat_app/features/conversation/data/repository/convo_repo_impl.dart';
+import 'package:chat_app/features/conversation/domain/usecases/getConversationId.dart';
 import 'package:chat_app/features/conversation/presentation/bloc/conversation_bloc.dart';
+import 'package:chat_app/features/conversation/presentation/bloc/get_conversation_bloc.dart';
+import 'package:chat_app/features/conversation/presentation/bloc/get_users_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     BlocProvider.of<ConversationBloc>(context).add(FetchConversations());
+    BlocProvider.of<GetUsersBloc>(context).add(GetUsers());
   }
 
   @override
@@ -45,17 +51,30 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Container(
-            height: 100,
-            padding: EdgeInsets.all(5.0),
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildRecentContact('Pushpa', context),
-                _buildRecentContact('Singham', context),
-                _buildRecentContact('Bahubali', context),
-              ],
-            ),
-          ),
+              height: 100,
+              padding: EdgeInsets.all(5.0),
+              child: BlocBuilder<GetUsersBloc, GetUsersState>(
+                  builder: (context, state) {
+                if (state is UsersLoaded) {
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: state.users.length,
+                    itemBuilder: (context, index) {
+                      final user = state.users[index];
+                      return _buildRecentContact(
+                        user.username,
+                        user.id,
+                        context,
+                      );
+                    },
+                  );
+                } else if (state is ErrorState) {
+                  return Center(child: Text(state.message));
+                }
+                return Center(
+                  child: Text("No User found"),
+                );
+              })),
           SizedBox(
             height: 10,
           ),
@@ -79,8 +98,8 @@ class _HomePageState extends State<HomePage> {
                     itemBuilder: (context, index) {
                       final conversation = state.conversations[index];
                       return _buildMessageTile(
-                        conversation.name,
-                        conversation.lastMessage,
+                        conversation.name ?? '',
+                        conversation.lastMessage ?? '',
                         conversation.lastMessageTime.toString(),
                         conversation.id,
                       );
@@ -100,24 +119,59 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildRecentContact(String name, BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10.0),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundImage:
-                NetworkImage('https://avatar.iran.liara.run/public/boy'),
+  Widget _buildRecentContact(String name, String id, BuildContext context) {
+    return BlocProvider(
+      create: (context) => GetConversationBloc(GetConversationIdUseCase(
+          repository: ConversationRepositoryImpl(
+              remoteDataSource: ConversationRemoteDataSource()))),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10.0),
+          child: BlocConsumer<GetConversationBloc, GetConversationState>(
+            listener: (context, state) {
+              if (state is GetConversationLoaded) {
+                final convoId = state.conversationId.id;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatPage(
+                      conversationId: convoId,
+                      name: name,
+                    ),
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              return GestureDetector(
+                onTap: () {
+                  context.read<GetConversationBloc>().add(
+                        GetConversationId(otherUserId: id),
+                      );
+                },
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundImage: NetworkImage(
+                          'https://avatar.iran.liara.run/public/boy'),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      name,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    if (state is GetConversationLoading)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5),
+                        child: CircularProgressIndicator(),
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
-          SizedBox(
-            height: 5,
-          ),
-          Text(
-            name,
-            style: Theme.of(context).textTheme.bodyMedium,
-          )
-        ],
+        ),
       ),
     );
   }

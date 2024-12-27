@@ -14,7 +14,11 @@ import 'package:chat_app/core/theme.dart';
 import 'package:chat_app/features/conversation/data/datasource/convo_remote_data_source.dart';
 import 'package:chat_app/features/conversation/data/repository/convo_repo_impl.dart';
 import 'package:chat_app/features/conversation/domain/usecases/fetch_convos_usecase.dart';
+import 'package:chat_app/features/conversation/domain/usecases/getAllUsersUseCase.dart';
+import 'package:chat_app/features/conversation/domain/usecases/getConversationId.dart';
 import 'package:chat_app/features/conversation/presentation/bloc/conversation_bloc.dart';
+import 'package:chat_app/features/conversation/presentation/bloc/get_conversation_bloc.dart';
+import 'package:chat_app/features/conversation/presentation/bloc/get_users_bloc.dart';
 import 'package:chat_app/features/conversation/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,13 +70,22 @@ class MyApp extends StatelessWidget {
           ),
         ),
         BlocProvider(
+            create: (_) => GetUsersBloc(
+                  GetallUsersUseCase(repository: conversationRepositoryImpl),
+                )),
+        BlocProvider(
+            create: (_) => GetConversationBloc(
+                  GetConversationIdUseCase(
+                      repository: conversationRepositoryImpl),
+                )),
+        BlocProvider(
           create: (_) => ChatBloc(
             FetchMessagesUseCase(messagesRepository: messagesRepositoryImpl),
           ),
         ),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Chat App',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         home: AuthWrapper(),

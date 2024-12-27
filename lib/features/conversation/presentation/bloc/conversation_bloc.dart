@@ -1,5 +1,5 @@
 import 'package:chat_app/core/socket_service.dart';
-import 'package:chat_app/features/conversation/domain/entity/convo_entity.dart';
+import 'package:chat_app/features/conversation/domain/entities/convo_entity.dart';
 import 'package:chat_app/features/conversation/domain/usecases/fetch_convos_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +9,7 @@ part 'conversation_state.dart';
 
 class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   final FetchConversationsUseCase fetchConversationsUseCase;
+
   final SocketService _socketService = SocketService();
 
   ConversationBloc(this.fetchConversationsUseCase)
